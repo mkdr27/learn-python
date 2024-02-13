@@ -72,12 +72,15 @@ try:
 except mysql.connector.Error as error:
     print("Failed to create table in MySQL: {}".format(error))
 
-def generate_available_slots():
+def update_slot_table():
     slots = []
-    for hour in range(8, 16):  # 8 AM to 4 PM 
-        for minutes in range(0, 60, 30):  # 15-minute slots
+    for hour in range(8, 16):  
+        for minutes in range(0, 60, 30): 
             slots.append(f"{hour:02d}:{minutes:02d}")
-    return slots
+    insert_slot_query = "INSERT INTO slots (time_slot) VALUES (%s)"
+    for slot in slots:
+        cursor.execute(insert_slot_query, (slot,))
+    connection.commit()
 
 def display_doctor():
         get_doctor_query = "SELECT name FROM appointment.doctors;"
@@ -138,7 +141,6 @@ def generate_patient_id():
         patient_id_list.append(patient_id)
     new_patient_id = max(patient_id_list)+1
     return new_patient_id
-
 
 # doctor3 = Doctor('physician_doctor',3)
 # doctor4 = Doctor('ent_doctor',4)
