@@ -72,7 +72,7 @@ try:
 except mysql.connector.Error as error:
     print("Failed to create table in MySQL: {}".format(error))
 
-def update_slot_table():
+def define_slot_table():
     slots = []
     for hour in range(8, 16):  
         for minutes in range(0, 60, 30): 
