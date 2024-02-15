@@ -2,6 +2,7 @@ import requests
 import socket
 import ssl
 import datetime
+import hashlib
 
 def get_website_content(url):
     try:
@@ -22,11 +23,12 @@ def get_certificate_info(host, port):
         context = ssl.create_default_context()
         with socket.create_connection((host, port)) as sock:
             with context.wrap_socket(sock, server_hostname=host) as ssock:
-                cert = ssock.getpeercert()
+                cert = ssock.getpeercert(binary_form=True)
+                x509 = ssl.DER_cert_to_PEM_cert(cert)
+                cert_hash = hashlib.sha1(x509.encode('utf-8')).hexdigest()
                 expiry_date = datetime.datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z')
                 serial_number = cert['serialNumber']
-                thumbprint = cert['thumbprint']
-                return expiry_date, serial_number, thumbprint
+                return expiry_date, serial_number, cert_hash
     except Exception as e:
         return None, None, None
 
