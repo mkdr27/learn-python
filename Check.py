@@ -1,4 +1,55 @@
-import requests
+import csv
+import hashlib
+
+def get_thumbprint(cert_data):
+    cert_hash = hashlib.sha1(cert_data.encode('utf-8')).hexdigest()
+    return cert_hash
+
+# Read the CSV file and extract hostname and thumbprint
+def read_csv_file(file_path):
+    host_thumbprint_map = {}
+    with open(file_path, mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            hostname = row['Hostname']
+            thumbprint = row['Thumbprint']
+            host_thumbprint_map[hostname] = thumbprint
+    return host_thumbprint_map
+
+# Compare downloaded thumbprint with thumbprint from CSV for a given hostname
+def compare_thumbprint(downloaded_thumbprint, csv_thumbprint):
+    if downloaded_thumbprint == csv_thumbprint:
+        return True
+    else:
+        return False
+
+# Example usage:
+website_url = 'https://www.example.com'
+host = 'www.example.com'
+port = 443
+
+# Download certificate info
+expiry_date, serial_number, downloaded_thumbprint = get_certificate_info(host, port)
+
+# Read CSV file
+csv_file_path = 'certificates.csv'
+host_thumbprint_map = read_csv_file(csv_file_path)
+
+# Filter thumbprint using hostname from CSV
+if host in host_thumbprint_map:
+    csv_thumbprint = host_thumbprint_map[host]
+
+    # Compare thumbprints
+    match = compare_thumbprint(downloaded_thumbprint, csv_thumbprint)
+    if match:
+        print("Thumbprint matches with the CSV entry for", host)
+    else:
+        print("Thumbprint does not match with the CSV entry for", host)
+else:
+    print("Hostname", host, "not found in the CSV file.")
+    
+    
+    import requests
 import socket
 import ssl
 import datetime
